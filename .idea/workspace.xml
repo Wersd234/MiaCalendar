@@ -5,21 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f0492603-76ea-41e0-b46c-f2bbabc586c1" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/pet_states/angry.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/pet_states/closed.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/pet_states/happy.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/pet_states/open.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/pet_states/shock.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/pet_states/shy.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/asset/pet_states/sleep.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/back/server.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/back/weather_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/config.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/front/forecast_ui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/front/front_main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/front/pet_ui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/front/weather.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/back/calendar_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/front/calendar_ui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/back/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/back/server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/front/front_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/front/front_main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/front/pet_ui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/front/pet_ui.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,42 +51,44 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.calendar_ui.executor&quot;: &quot;Run&quot;,
-    &quot;Python.config.executor&quot;: &quot;Run&quot;,
-    &quot;Python.debug_window.executor&quot;: &quot;Run&quot;,
-    &quot;Python.dlib_test.executor&quot;: &quot;Run&quot;,
-    &quot;Python.fix_dll.executor&quot;: &quot;Run&quot;,
-    &quot;Python.front_main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.launcher.executor&quot;: &quot;Run&quot;,
-    &quot;Python.llm.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.mouth.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pet.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pet_ui.executor&quot;: &quot;Run&quot;,
-    &quot;Python.register_face.executor&quot;: &quot;Run&quot;,
-    &quot;Python.server.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test_gpu.executor&quot;: &quot;Run&quot;,
-    &quot;Python.vision.executor&quot;: &quot;Run&quot;,
-    &quot;Python.weather.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Jason Han/PycharmProjects/Jarvis/asset/pet_states&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.calendar_service.executor": "Run",
+    "Python.calendar_ui.executor": "Run",
+    "Python.config.executor": "Run",
+    "Python.debug_window.executor": "Run",
+    "Python.dlib_test.executor": "Run",
+    "Python.fix_dll.executor": "Run",
+    "Python.front_main.executor": "Run",
+    "Python.launcher.executor": "Run",
+    "Python.llm.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.mouth.executor": "Run",
+    "Python.pet.executor": "Run",
+    "Python.pet_ui.executor": "Run",
+    "Python.register_face.executor": "Run",
+    "Python.server.executor": "Run",
+    "Python.test_gpu.executor": "Run",
+    "Python.vision.executor": "Run",
+    "Python.weather.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/Jason Han/PycharmProjects/Jarvis/asset/pet_states"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\asset\pet_states" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\src\back" />
       <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis" />
-      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\libs" />
-      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\tools" />
+      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\src\front\asset" />
+      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\src\front" />
+      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\src" />
+      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\src\data" />
     </key>
   </component>
   <component name="SharedIndexes">

@@ -2,9 +2,10 @@
 import os
 import json
 import httpx
+import re  # 🌟 增加正则支持
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-
-# 🌟 修复1：补充导入所有的天气相关函数
+from pydantic import BaseModel
+from calendar_service import calendar_service
 from weather_service import (
     fetch_weather_from_api,
     fetch_7_days_forecast,
@@ -42,57 +43,99 @@ def get_active_model():
 
 
 # ================= 🌟 HTTP 路由区域 =================
-
-# 🌟 修复2：补充单日天气接口（给前端的日历使用）
 @app.get("/api/weather")
 async def get_daily_weather_endpoint(date: str):
-    """前端日历调用此接口获取指定日期的天气"""
     data = fetch_weather_from_api(date)
     return {"status": "success", "data": data}
 
 
-# 7 天天气接口（给前端的 "显示近七天天气" 按钮使用）
 @app.get("/api/weather/7days")
 async def get_weather_7days_endpoint():
-    """前端调用此接口获取 7 天天气预报"""
     data = fetch_7_days_forecast()
     return {"status": "success", "data": data}
 
 
-# ================= 🌟 WebSocket 区域 =================
+class EventItem(BaseModel):
+    date_str: str
+    time_str: str
+    title: str
+    desc: str = ""
+
+
+@app.get("/api/calendar")
+async def get_calendar_events(date: str):
+    data = calendar_service.get_events(date)
+    return {"status": "success", "data": data}
+
+
+@app.post("/api/calendar")
+async def add_calendar_event(item: EventItem):
+    calendar_service.add_event(item.date_str, item.time_str, item.title, item.desc)
+    return {"status": "success"}
+
+
+@app.delete("/api/calendar")
+async def delete_calendar_event(date: str, index: int):
+    calendar_service.delete_event(date, index)
+    return {"status": "success"}
+
+
+# ================= 🌟 WebSocket 区域 (大脑核心) =================
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     user_id = "default_user"
 
-    # 初始化时注入今天的天气感知
+    # 1. 🌟 初始化注入：增加 [ACTION] 协议说明
     if user_id not in history_db:
         base_prompt = config["ai_server"]["system_prompt"]
         current_weather_txt = get_ai_weather_report()
-        smart_prompt = f"{base_prompt} \n\n【系统实时信息】：{current_weather_txt}"
+        upcoming_events_txt = calendar_service.get_upcoming_events_str(days=3)
+
+        # 🌟 核心改进：在 System Prompt 中加入视觉动作规范
+        emotion_guide = (
+            "\n\n【视觉动作规范】\n"
+            "你可以通过在回复的最开头加入 [ACTION:表情名] 来控制你的桌宠形象。可选表情：\n"
+            "- [ACTION:shy] : 当朋友夸奖你、调戏你或感到不好意思时使用。\n"
+            "- [ACTION:happy] : 当心情愉快或欢迎朋友时使用。\n"
+            "- [ACTION:angry] : 当朋友欺负你或你说教时使用。\n"
+            "- [ACTION:shock] : 当感到惊讶或听到意外消息时使用。\n"
+            "注意：每条回复仅限在开头使用一个标签。请保持一个友善的形象。"
+        )
+
+        smart_prompt = f"{base_prompt} {emotion_guide} \n\n【系统实时信息】\n天气实况：{current_weather_txt}\n未来三天日程：\n{upcoming_events_txt}"
         history_db[user_id] = [{"role": "system", "content": smart_prompt}]
-        print(f"🧠 AI 大脑已注入环境感知: {current_weather_txt}")
+        print(f"🧠 大脑已初始化，成功注入环境感知与情绪系统！")
 
     try:
         while True:
             user_message = await websocket.receive_text()
-            print(f"收到前端消息: {user_message}")
-
-            # 🌟 修复3：加入关键词拦截与 RAG 增强
             msg_to_ai = user_message
-            # 只要用户提到这些词，就偷偷去拿 7 天数据给 AI 看
-            if any(keyword in user_message for keyword in ["天气", "下雨", "气温", "冷", "热", "带伞", "出去玩"]):
-                print("☁️ 检测到天气询问，正在提取实时气象数据注入大脑...")
-                forecast_txt = get_ai_7_days_report()
-                msg_to_ai = f"【系统提示：用户正在询问天气。请根据以下实时气象数据回答用户的问题，并给出贴心的建议。回答简短、傲娇、幽默：\n{forecast_txt}】\n\n主人说：{user_message}"
 
-            # 把带有提示的消息（或者普通消息）存入记忆并发送给模型
+            # ================= 🌟 关键词拦截与情绪诱导 (Emotion RAG) =================
+
+            # 1. 检测夸奖/可爱相关 (触发 shy)
+            if any(keyword in user_message for keyword in ["可爱", "萌", "漂亮", "喜欢你", "真棒", "好乖"]):
+                print("💖 检测到夸奖，正在诱导害羞情绪...")
+                msg_to_ai = f"【系统提示：你的朋友正在夸奖你，请表现得非常害羞，务必在回复最开头加上 [ACTION:shy]】\n\n主人说：{user_message}"
+
+            # 2. 检测天气相关
+            elif any(keyword in user_message for keyword in ["天气", "下雨", "气温", "冷", "热", "带伞"]):
+                forecast_txt = get_ai_7_days_report()
+                msg_to_ai = f"【系统提示：用户询问天气，请参考以下气象数据回答。回答要简短、傲娇，并根据天气决定表情（如阴雨用 [ACTION:angry]，晴天用 [ACTION:happy]）：\n{forecast_txt}】\n\n主人说：{user_message}"
+
+            # 3. 检测日程相关
+            elif any(keyword in user_message for keyword in ["日程", "安排", "打算", "计划", "明天干嘛"]):
+                fresh_events = calendar_service.get_upcoming_events_str(days=7)
+                msg_to_ai = f"【系统提示：用户正在询问日程，请作为秘书如实回答。开头可以加上 [ACTION:shock] 如果日程很满：\n{fresh_events}】\n\n主人说：{user_message}"
+            # ===================================================================
+
             history_db[user_id].append({"role": "user", "content": msg_to_ai})
 
             payload = {
                 "model": get_active_model(),
                 "messages": history_db[user_id],
-                "temperature": 0.7,
+                "temperature": 0.8,  # 🌟 略微调高温度，让表情更多变
                 "stream": True
             }
 
@@ -108,8 +151,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         async for line in response.aiter_lines():
                             if line.startswith("data: "):
                                 decoded_line = line.replace('data: ', '').strip()
-                                if decoded_line == '[DONE]':
-                                    break
+                                if decoded_line == '[DONE]': break
                                 try:
                                     data = json.loads(decoded_line)
                                     content = data['choices'][0]['delta'].get('content', '')
@@ -133,5 +175,4 @@ async def websocket_endpoint(websocket: WebSocket):
 if __name__ == "__main__":
     import uvicorn
 
-    print("--- 正在初始化后端 (带环境感知能力) ---")
     uvicorn.run(app, host=config["backend"]["host"], port=config["backend"]["port"])
