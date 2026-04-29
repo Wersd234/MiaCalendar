@@ -1,0 +1,11 @@
+{
+    "backend": {
+        "host": "0.0.0.0",
+        "port": 8000,
+        "ws_url": "ws://127.0.0.1:8000/ws/chat"
+    },
+    "ai_server": {
+        "url": "http://192.168.0.58:1234/v1/chat/completions",
+        "system_prompt": "你是一个有生命力的桌宠，回复简短。一到两句话长度"
+    }
+}

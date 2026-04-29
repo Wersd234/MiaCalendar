@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f0492603-76ea-41e0-b46c-f2bbabc586c1" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/asset/pet_states/angry.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/asset/pet_states/closed.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/asset/pet_states/happy.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/asset/pet_states/open.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/asset/pet_states/shock.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/asset/pet_states/shy.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/asset/pet_states/sleep.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/back/server.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/back/weather_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/config.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/front/forecast_ui.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/front/front_main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/front/pet_ui.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/front/weather.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Wersd234&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Wersd234/MiaCalendar.git&quot;,
+    &quot;accountId&quot;: &quot;dc34c775-3d7a-46d0-bbc4-fb155905722a&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="39EsxhUzoMLWrecxYf4r0HQfYTe" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.calendar_ui.executor&quot;: &quot;Run&quot;,
+    &quot;Python.config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.debug_window.executor&quot;: &quot;Run&quot;,
+    &quot;Python.dlib_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.fix_dll.executor&quot;: &quot;Run&quot;,
+    &quot;Python.front_main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.launcher.executor&quot;: &quot;Run&quot;,
+    &quot;Python.llm.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mouth.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pet.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pet_ui.executor&quot;: &quot;Run&quot;,
+    &quot;Python.register_face.executor&quot;: &quot;Run&quot;,
+    &quot;Python.server.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_gpu.executor&quot;: &quot;Run&quot;,
+    &quot;Python.vision.executor&quot;: &quot;Run&quot;,
+    &quot;Python.weather.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Jason Han/PycharmProjects/Jarvis/asset/pet_states&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\asset\pet_states" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\src\back" />
+      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis" />
+      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\libs" />
+      <recent name="C:\Users\Jason Han\PycharmProjects\Jarvis\tools" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-53e2683a6804-9cdd278e9d02-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-251.26094.141" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="f0492603-76ea-41e0-b46c-f2bbabc586c1" name="更改" comment="" />
+      <created>1770272812702</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1770272812702</updated>
+    </task>
+    <servers />
+  </component>
+</project>
