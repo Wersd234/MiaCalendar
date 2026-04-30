@@ -5,12 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f0492603-76ea-41e0-b46c-f2bbabc586c1" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/src/back/calendar_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/front/calendar_ui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/back/calendar_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/back/calendar_service.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/back/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/back/server.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/front/front_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/front/front_main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/front/pet_ui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/front/pet_ui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/back/test_ptv.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/back/transport_service.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/discord/discord_main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/discord/discord_main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,8 +59,10 @@
     "Python.calendar_ui.executor": "Run",
     "Python.config.executor": "Run",
     "Python.debug_window.executor": "Run",
+    "Python.discord_main.executor": "Run",
     "Python.dlib_test.executor": "Run",
     "Python.fix_dll.executor": "Run",
+    "Python.forecast_ui.executor": "Run",
     "Python.front_main.executor": "Run",
     "Python.launcher.executor": "Run",
     "Python.llm.executor": "Run",
@@ -70,6 +73,7 @@
     "Python.register_face.executor": "Run",
     "Python.server.executor": "Run",
     "Python.test_gpu.executor": "Run",
+    "Python.test_ptv.executor": "Run",
     "Python.vision.executor": "Run",
     "Python.weather.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",

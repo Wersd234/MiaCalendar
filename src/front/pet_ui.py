@@ -1,3 +1,4 @@
+# 📁 src/front/pet_ui.py
 import os
 import psutil
 from PySide6.QtWidgets import (QWidget, QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
@@ -18,11 +19,12 @@ EMOTION_FILES = {
 
 
 class DesktopPetUI(QWidget):
-    # 暴露信号给控制器 (front_main.py)
+    # 🌟 所有的信号暴露区
     message_sent = Signal(str)
     reconnect_requested = Signal()
     weather_7d_requested = Signal()
     calendar_requested = Signal()
+    anime_requested = Signal()  # 🌟 追番信号
 
     def __init__(self):
         super().__init__()
@@ -56,6 +58,8 @@ class DesktopPetUI(QWidget):
 
         if 'closed' not in self.emotion_pixmaps:
             self.emotion_pixmaps['closed'] = QPixmap(280, 280)
+        if 'open' not in self.emotion_pixmaps:
+            self.emotion_pixmaps['open'] = self.emotion_pixmaps['closed']
 
     def init_ui(self):
         self.main_layout = QVBoxLayout()
@@ -117,8 +121,15 @@ class DesktopPetUI(QWidget):
         self.btn_weather.setStyleSheet(btn_style)
         self.btn_weather.clicked.connect(self.weather_7d_requested.emit)
 
+        # 🌟 追番按钮
+        self.btn_anime = QPushButton("📺")
+        self.btn_anime.setFixedSize(35, 35)
+        self.btn_anime.setStyleSheet(btn_style)
+        self.btn_anime.clicked.connect(self.anime_requested.emit)
+
         toolbar_layout.addWidget(self.btn_calendar)
         toolbar_layout.addWidget(self.btn_weather)
+        toolbar_layout.addWidget(self.btn_anime)  # 加入右侧工具栏
         middle_layout.addWidget(self.toolbar_container, 0, Qt.AlignRight | Qt.AlignTop)
 
         self.main_layout.addWidget(middle_container)
@@ -173,10 +184,9 @@ class DesktopPetUI(QWidget):
         self.monitor_timer.timeout.connect(self.update_system_stats)
         self.monitor_timer.start(2000)
 
-    # ================= 🌟 补全缺失的关键函数 =================
+    # ================= 🌟 以下是你之前不小心漏掉的功能函数 =================
 
     def show_system_message(self, text, duration=3000):
-        """🌟 修复：此函数被 front_main.py 频繁调用，不可删除"""
         self.reset_idle_timer()
         self.bubble.setText(text)
         self.bubble.show()
@@ -250,6 +260,7 @@ class DesktopPetUI(QWidget):
         except:
             pass
 
+    # 👇 刚才报错就是因为缺了这个发送消息的函数
     def trigger_send_message(self):
         text = self.input_box.text().strip()
         if not text: return
@@ -291,10 +302,12 @@ class DesktopPetUI(QWidget):
         self.history_box.setVisible(not self.history_box.isVisible())
 
     def mousePressEvent(self, event):
+        self.reset_idle_timer()
         self._is_dragging = False
         if event.button() == Qt.LeftButton:
             child = self.childAt(event.pos())
-            if child not in [self.input_box, self.btn_history, self.history_box, self.btn_calendar, self.btn_weather]:
+            if child not in [self.input_box, self.btn_history, self.history_box, self.btn_calendar, self.btn_weather,
+                             self.btn_anime]:
                 self._is_dragging = True
                 self.drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
                 event.accept()
@@ -310,25 +323,87 @@ class DesktopPetUI(QWidget):
         self._is_dragging = False
         self.drag_pos = None
 
+    def toggle_always_on_top(self):
+        """切换窗口是否置于顶层"""
+        flags = self.windowFlags()
+
+        # 检查当前是否是置顶状态
+        if flags & Qt.WindowStaysOnTopHint:
+            # 如果是置顶，就取消置顶
+            self.setWindowFlags(flags & ~Qt.WindowStaysOnTopHint)
+            self.show_system_message("已取消置顶~", 2000)
+        else:
+            # 如果未置顶，就加上置顶标志
+            self.setWindowFlags(flags | Qt.WindowStaysOnTopHint)
+            self.show_system_message("已永远置于顶层！", 2000)
+
+        # Qt 的特性：修改 flags 后窗口会隐藏，必须重新 show 一下
+        self.show()
+
     def show_context_menu(self, pos):
         menu = QMenu(self)
-        menu.setStyleSheet("QMenu { background: white; border: 1px solid #FFB7C5; }")
 
-        act1 = QAction("🌤️ 七天天气预报", self)
-        act1.triggered.connect(self.weather_7d_requested.emit)
-        menu.addAction(act1)
+        # 🌟 菜单美化 CSS
+        menu.setStyleSheet("""
+            QMenu { 
+                background-color: white; 
+                border: 2px solid #FFB7C5; 
+                border-radius: 8px;
+                padding: 5px;
+            }
+            QMenu::item { 
+                color: #FF1493;
+                font-family: 'Microsoft YaHei';
+                font-weight: bold; 
+                font-size: 13px;
+                padding: 8px 25px 8px 20px; 
+                border-radius: 5px;
+            }
+            QMenu::item:selected { 
+                background-color: #FFF0F5;
+                color: #FF1493;
+            }
+            QMenu::separator {
+                height: 1px;
+                background-color: #FFD1DC;
+                margin: 4px 10px;
+            }
+        """)
 
-        act2 = QAction("📅 切换日历显示", self)
-        act2.triggered.connect(self.calendar_requested.emit)
-        menu.addAction(act2)
+        # 🌟 0. 动态判断当前的置顶状态，生成对应的按钮
+        is_on_top = bool(self.windowFlags() & Qt.WindowStaysOnTopHint)
+        top_text = "📌 取消置顶" if is_on_top else "📌 置于顶层"
+        act_top = QAction(top_text, self)
+        act_top.triggered.connect(self.toggle_always_on_top)
+        menu.addAction(act_top)
 
-        act3 = QAction("🔄 重新连接大脑", self)
-        act3.triggered.connect(self.reconnect_requested.emit)
-        menu.addAction(act3)
+        menu.addSeparator()  # 加一条粉色分割线
+
+        # 1. 天气
+        act_weather = QAction("🌤️ 七天天气预报", self)
+        act_weather.triggered.connect(self.weather_7d_requested.emit)
+        menu.addAction(act_weather)
+
+        # 2. 日历
+        act_cal = QAction("📅 切换日历显示", self)
+        act_cal.triggered.connect(self.calendar_requested.emit)
+        menu.addAction(act_cal)
+
+        # 3. 追番
+        act_anime = QAction("📺 我的追番列表", self)
+        act_anime.triggered.connect(self.anime_requested.emit)
+        menu.addAction(act_anime)
+
+        # 4. 重连
+        act_reconnect = QAction("🔄 重新连接大脑", self)
+        act_reconnect.triggered.connect(self.reconnect_requested.emit)
+        menu.addAction(act_reconnect)
 
         menu.addSeparator()
-        act4 = QAction("❌ 退出程序", self)
-        act4.triggered.connect(self.window().close)
-        menu.addAction(act4)
+
+        # 5. 退出
+        act_exit = QAction("❌ 退出程序", self)
+        act_exit.triggered.connect(self.window().close)
+        menu.addAction(act_exit)
 
         menu.exec(pos)

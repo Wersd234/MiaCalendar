@@ -7,5 +7,15 @@
     "ai_server": {
         "url": "http://192.168.0.58:1234/v1/chat/completions",
         "system_prompt": "你是一个有生命力的桌宠，回复简短。一到两句话长度"
+    },
+    "nextcloud": {
+        "caldav_url": "https://192.168.0.58:443/remote.php/dav",
+        "username": "rongze",
+        "password": "",
+        "calendar_name": "Personal"
+    },
+    "discord": {
+        "bot_token": "",
+        "owner_id": ""
     }
 }

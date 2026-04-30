@@ -1,3 +1,4 @@
 dist/
 libs/
 .venv/
+src/.env

@@ -1,70 +1,210 @@
 # 📁 src/back/calendar_service.py
-import json
 import os
+import json
+import caldav
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
-# 🌟 修复路径：确保日历数据保存在项目的根目录，不会因为启动路径不同而丢失
+import requests
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_FILE = os.path.join(BASE_DIR, "data/calendar.json")
+CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
+ENV_PATH = os.path.join(BASE_DIR, ".env")
 
-class CalendarService:
+load_dotenv(ENV_PATH)
+
+
+class NextcloudCalendarService:
     def __init__(self):
-        self.events = self.load_events()
+        self.config = self.load_config()
+        self.calendar = self._connect_nextcloud()
 
-    def load_events(self):
-        if not os.path.exists(DATA_FILE):
-            return {}
+    def load_config(self):
         try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except:
+        except Exception as e:
+            print(f"❌ 加载配置失败: {e}")
             return {}
 
-    def save_events(self):
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
-            json.dump(self.events, f, ensure_ascii=False, indent=4)
+    def _connect_nextcloud(self):
+        nc_config = self.config.get("nextcloud", {})
+        url = nc_config.get("caldav_url")
+        username = nc_config.get("username")
+        password = os.getenv("NEXTCLOUD_PASSWORD") or nc_config.get("password", "")
+
+
+        if not (url and username and password):
+            print("⚠️ 未配置 Nextcloud 日历，请检查 config.json")
+            return None
+
+        try:
+            # 🌟 终极修复：彻底关闭 SSL 验证
+            client = caldav.DAVClient(
+                url=url,
+                username=username,
+                password=password,
+                ssl_verify_cert=False
+            )
+
+            # 强制覆盖底层请求库的验证机制 (对抗最新版 requests 的严苛限制)
+            if hasattr(client, 'session'):
+                client.session.verify = False
+
+            principal = client.principal()
+            calendars = principal.calendars()
+
+            # 如果配置了特定的日历名称，就找那个，否则用获取到的第一个日历
+            target_cal_name = nc_config.get("calendar_name", "Personal")
+
+            for cal in calendars:
+                if target_cal_name in cal.name:
+                    print(f"✅ 成功连接到 Nextcloud 日历: {cal.name}")
+                    return cal
+
+            if calendars:
+                print(f"✅ 默认连接到 Nextcloud 日历: {calendars[0].name}")
+                return calendars[0]
+
+        except Exception as e:
+            print(f"❌ Nextcloud 日历连接失败，请检查网络或凭证: {e}")
+
+        return None
 
     def get_events(self, date_str):
-        """获取指定日期的事件列表"""
-        return self.events.get(date_str, [])
+        """提供给前端日历 UI：获取指定日期的日程"""
+        if not self.calendar:
+            return []
 
-    def add_event(self, date_str, time_str, title, desc=""):
-        """添加事件"""
-        if date_str not in self.events:
-            self.events[date_str] = []
+        try:
+            target_date = datetime.strptime(date_str, "%Y-%m-%d")
+            # 搜索这一天 00:00 到第二天 00:00 的所有事件
+            start = target_date
+            end = target_date + timedelta(days=1)
 
-        self.events[date_str].append({
-            "time": time_str,
-            "title": title,
-            "description": desc
-        })
-        # 按时间排序
-        self.events[date_str].sort(key=lambda x: x["time"])
-        self.save_events()
+            # expand=True 会自动展开循环/重复的日程
+            events = self.calendar.search(start=start, end=end, event=True, expand=True)
+
+            result = []
+            for e in events:
+                # 获取底层的 iCalendar 数据对象
+                ical = e.icalendar_instance.walk("VEVENT")[0]
+                title = str(ical.get('SUMMARY', '无标题'))
+                desc = str(ical.get('DESCRIPTION', ''))
+                uid = str(ical.get('UID', ''))
+
+                dtstart = ical.get('DTSTART').dt
+
+                # 判断是全天事件还是具体时间点事件
+                if isinstance(dtstart, datetime):
+                    time_str = dtstart.strftime("%H:%M")
+                else:
+                    time_str = "全天"
+
+                result.append({
+                    "title": title,
+                    "time_str": time_str,
+                    "desc": desc,
+                    "uid": uid  # 保存 UID 以便后续精准删除
+                })
+
+            # 按照时间排序
+            result.sort(key=lambda x: x["time_str"])
+            return result
+
+        except Exception as e:
+            print(f"获取日程失败: {e}")
+            return []
+
+    def add_event(self, event_data: dict):
+        """提供给前端：向 Nextcloud 添加包含完整字段的新日程"""
+        if not self.calendar:
+            return
+
+        title = event_data.get("title", "无标题")
+        is_all_day = event_data.get("is_all_day", False)
+        location = event_data.get("location", "")
+        desc = event_data.get("desc", "")
+
+        start_date = event_data.get("start_date")
+        start_time = event_data.get("start_time")
+        end_date = event_data.get("end_date")
+        end_time = event_data.get("end_time")
+
+        try:
+            if is_all_day:
+                # 全天事件：不需要具体时间，只需日期。NC 规定结束日期必须是第二天。
+                start_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
+                end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
+                if start_dt == end_dt:
+                    end_dt += timedelta(days=1)
+            else:
+                # 具体时间事件：拼接日期和时间
+                start_dt = datetime.strptime(f"{start_date} {start_time}", "%Y-%m-%d %H:%M")
+                end_dt = datetime.strptime(f"{end_date} {end_time}", "%Y-%m-%d %H:%M")
+
+            self.calendar.save_event(
+                dtstart=start_dt,
+                dtend=end_dt,
+                summary=title,
+                description=desc,
+                location=location
+            )
+            print(f"✅ 成功同步完整事件到 Nextcloud: {title}")
+        except Exception as e:
+            print(f"❌ 添加日程失败: {e}")
 
     def delete_event(self, date_str, index):
-        """删除功能"""
-        if date_str in self.events:
-            events_list = self.events[date_str]
-            # 确保索引有效
-            if 0 <= index < len(events_list):
-                del events_list[index]
-                # 如果该日期没事件了，清理掉 Key，保持 JSON 整洁
-                if not events_list:
-                    del self.events[date_str]
-                self.save_events()
+        """提供给前端：删除指定日程"""
+        if not self.calendar:
+            return
 
-    def get_upcoming_events_str(self, days=3):
-        """获取未来几天的日程 (供 AI 读取)"""
-        upcoming = []
-        today = datetime.now().date()
-        for i in range(days + 1):
-            d = today + timedelta(days=i)
-            d_str = d.strftime("%Y-%m-%d")
-            if d_str in self.events:
-                for e in self.events[d_str]:
-                    upcoming.append(f"[{d_str} {e['time']}] {e['title']} - {e['description']}")
-        return "\n".join(upcoming) if upcoming else "暂无近期安排"
+        # 先获取这一天的事件列表，找到对应的 UID，然后通过 UID 在云端删除
+        events = self.get_events(date_str)
+        if 0 <= index < len(events):
+            uid_to_delete = events[index].get("uid")
+            if uid_to_delete:
+                try:
+                    event = self.calendar.event_by_uid(uid_to_delete)
+                    event.delete()
+                    print("✅ 成功从 Nextcloud 彻底删除日程")
+                except Exception as e:
+                    print(f"❌ 删除失败: {e}")
 
-# 单例实例，供 FastAPI 调用
-calendar_service = CalendarService()
+    def get_upcoming_events_str(self, days=7):
+        """提供给 AI 大脑的后台轮询：提取未来日程快照"""
+        if not self.calendar:
+            return "未连接 Nextcloud 日历，暂无数据"
+
+        try:
+            start = datetime.now()
+            end = start + timedelta(days=days)
+            events = self.calendar.search(start=start, end=end, event=True, expand=True)
+
+            if not events:
+                return "未来几天没有日程安排"
+
+            lines = []
+            for e in events:
+                ical = e.icalendar_instance.walk("VEVENT")[0]
+                title = str(ical.get('SUMMARY', '无标题'))
+
+                dtstart = ical.get('DTSTART').dt
+                if isinstance(dtstart, datetime):
+                    date_str = dtstart.strftime("%Y-%m-%d %H:%M")
+                else:
+                    date_str = dtstart.strftime("%Y-%m-%d") + " (全天)"
+
+                lines.append(f"- {date_str}: {title}")
+
+            lines.sort()
+            return "\n".join(lines)
+
+        except Exception as e:
+            return f"获取云端日程失败: {e}"
+
+
+# 实例化并导出，保持和以前的 import 兼容
+calendar_service = NextcloudCalendarService()

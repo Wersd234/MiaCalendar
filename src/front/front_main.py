@@ -1,6 +1,7 @@
 # 📁 src/front/front_main.py
 import sys
 import os
+import datetime
 import json
 import re
 import requests
@@ -10,10 +11,10 @@ from PySide6.QtCore import QUrl, QObject, QTimer
 
 from pet_ui import DesktopPetUI
 from forecast_ui import ForecastWindow
-
-# 🌟 导入系统日历 UI
-# 从我们刚刚新建的同级文件中导入
 from calendar_ui import AdvancedCalendar
+from anime_ui import AnimeWindow  # 🌟 导入新写的追番模块
+
+from PySide6.QtGui import QColor, QFont, QCursor, QPalette, QTextCharFormat
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
@@ -25,13 +26,19 @@ class PetAppController(QObject):
         self.config = self.load_config()
         self.ui = DesktopPetUI()
         self.forecast_window = ForecastWindow()
-        self.calendar_win = None  # 🌟 存放日历窗口的实例
+        self.calendar_win = None
+        self.anime_win = None  # 🌟 存放追番窗口的实例
         self.ws = QWebSocket()
 
         self.reconnect_timer = QTimer()
         self.reconnect_timer.setInterval(5000)
         self.reconnect_timer.timeout.connect(self.auto_reconnect_task)
         self.reconnect_attempts = 0
+
+        # 🌟 新增：追番提醒引擎 (每 30 秒检查一次当前时间)
+        self.anime_monitor_timer = QTimer()
+        self.anime_monitor_timer.setInterval(30000)
+        self.anime_monitor_timer.timeout.connect(self.check_anime_broadcast)
 
         self.is_first_chunk = True
         self.in_tag = False
@@ -52,8 +59,8 @@ class PetAppController(QObject):
         self.ui.reconnect_requested.connect(self.manual_reconnect)
 
         self.ui.weather_7d_requested.connect(self.open_forecast_window)
-        # 🌟 绑定日历请求信号，由控制器负责弹窗
         self.ui.calendar_requested.connect(self.toggle_calendar)
+        self.ui.anime_requested.connect(self.toggle_anime)  # 🌟 绑定追番点击事件
 
         self.ws.connected.connect(self.on_ws_connected)
         self.ws.disconnected.connect(self.on_ws_disconnected)
@@ -65,6 +72,7 @@ class PetAppController(QObject):
             self.ui.show_system_message("❌ 配置加载失败，无法启动网络。")
             return
         self.connect_ws()
+        self.anime_monitor_timer.start() # 🌟 启动追番监控引擎
 
     # ================= 🌟 连接与重连逻辑 =================
 
@@ -93,6 +101,58 @@ class PetAppController(QObject):
         self.reconnect_timer.stop()
         self.reconnect_attempts = 0
         self.connect_ws()
+
+    # ================= 🌟 追番到点提醒引擎 (后端请求版) =================
+    def check_anime_broadcast(self):
+        """向后端请求最新数据，检查是否到了追番时间"""
+        try:
+            # 🌟 统一通过 API 获取数据
+            host = self.config["backend"]["host"]
+            port = self.config["backend"]["port"]
+            api_url = f"http://{host}:{port}/api/anime/watchlist"
+            res = requests.get(api_url, timeout=5)
+
+            if res.status_code != 200:
+                return
+            watchlist = res.json().get("data", [])
+        except:
+            return
+
+        now = datetime.datetime.now()
+        week_map = {"0": "周日", "1": "周一", "2": "周二", "3": "周三", "4": "周四", "5": "周五", "6": "周六"}
+        current_day = week_map[now.strftime('%w')]
+        current_time = now.strftime("%H:%M")
+        today_date_str = now.strftime("%Y-%m-%d")
+
+        data_changed = False
+
+        for anime in watchlist:
+            if anime.get("status") == "正在追":
+                if anime.get("day") == current_day and anime.get("time") == current_time:
+                    if anime.get("last_remind") != today_date_str:
+                        anime["last_remind"] = today_date_str
+                        data_changed = True
+
+                        anime_name = anime.get("name")
+                        current_ep = anime.get("ep", 1)
+
+                        trigger_prompt = (
+                            f"【系统最高指令：主人关注的番剧《{anime_name}》第{current_ep}集就在刚才更新了！"
+                            f"请立刻用极其兴奋的语气提醒主人！"
+                            f"务必在回复最开头带上 [ACTION:happy]！】"
+                        )
+                        print(f"⏰ 触发追番提醒: {anime_name}")
+                        self.send_to_backend(trigger_prompt)
+
+        if data_changed:
+            try:
+                # 🌟 有更新时，再通过 API 发回给后端保存
+                requests.post(api_url, json=watchlist, timeout=5)
+                if self.anime_win and self.anime_win.isVisible():
+                    self.anime_win.anime_data = watchlist
+                    self.anime_win.refresh_watchlist()
+            except:
+                pass
 
     # ================= 🌟 消息处理与拦截拦截器 =================
 
@@ -140,7 +200,7 @@ class PetAppController(QObject):
             self.ui.set_emotion(action_name)
             print(f"🎯 触发动作: {action_name}")
 
-    # ================= 🌟 调度天气和日历窗口 =================
+    # ================= 🌟 调度天气、日历、追番窗口 =================
 
     def open_forecast_window(self):
         self.ui.start_ai_reply()
@@ -179,6 +239,17 @@ class PetAppController(QObject):
             self.calendar_win.show()
             self.calendar_win.raise_()
             self.calendar_win.activateWindow()
+
+    def toggle_anime(self):
+        """🌟 控制器负责调度追番窗口的开关"""
+        if self.anime_win and self.anime_win.isVisible():
+            self.anime_win.hide()
+        else:
+            if self.anime_win is None:
+                self.anime_win = AnimeWindow()
+            self.anime_win.show()
+            self.anime_win.raise_()
+            self.anime_win.activateWindow()
 
 
 if __name__ == "__main__":
